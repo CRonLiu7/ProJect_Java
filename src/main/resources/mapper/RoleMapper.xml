@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.entity.Role">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT id, name, code, created_at, updated_at FROM sys_role WHERE id = #{id}
+    </select>
+    <select id="findByCode" resultMap="BaseResultMap">
+        SELECT id, name, code, created_at, updated_at FROM sys_role WHERE code = #{code}
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT id, name, code, created_at, updated_at FROM sys_role ORDER BY id
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_role (name, code) VALUES (#{name}, #{code})
+    </insert>
+    <update id="updateById">
+        UPDATE sys_role SET name = #{name}, code = #{code}, updated_at = CURRENT_TIMESTAMP WHERE id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.SysFileMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.entity.SysFile">
+        <id column="id" property="id"/>
+        <result column="original_name" property="originalName"/>
+        <result column="storage_path" property="storagePath"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="uploader_id" property="uploaderId"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT id, original_name, storage_path, file_size, uploader_id, created_at
+        FROM sys_file WHERE id = #{id}
+    </select>
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT id, original_name, storage_path, file_size, uploader_id, created_at
+        FROM sys_file ORDER BY created_at DESC
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_file (original_name, storage_path, file_size, uploader_id)
+        VALUES (#{originalName}, #{storagePath}, #{fileSize}, #{uploaderId})
+    </insert>
+    <delete id="deleteById">
+        DELETE FROM sys_file WHERE id = #{id}
+    </delete>
+</mapper>

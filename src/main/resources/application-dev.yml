@@ -1,0 +1,6 @@
+# 本地开发：连本机 Docker 的 PostgreSQL
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/project_java
+    username: app
+    password: app_secret

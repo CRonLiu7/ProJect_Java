@@ -1,0 +1,23 @@
+# 阶段 1：仅 PostgreSQL，后端本地运行连此库
+# 启动：docker compose up -d
+# 停止：docker compose down
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: project_java_pg
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app_secret
+      POSTGRES_DB: project_java
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d project_java"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
