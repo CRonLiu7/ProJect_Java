@@ -10,6 +10,7 @@ public class User {
     private Long id;
     private String username;
     private String passwordHash;
+    private Short status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -35,6 +36,14 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public Short getStatus() {
+        return status;
+    }
+
+    public void setStatus(Short status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {

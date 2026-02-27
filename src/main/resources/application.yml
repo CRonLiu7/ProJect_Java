@@ -20,3 +20,10 @@ mybatis:
   type-aliases-package: org.example.entity
   configuration:
     map-underscore-to-camel-case: true
+
+security:
+  jwt:
+    # 签名密钥：正式环境请放到环境变量或单独配置文件
+    secret: "change-this-secret-to-a-long-random-string"
+    # token 过期时间（分钟）
+    expiration-minutes: 60
