@@ -49,6 +49,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Redis（阶段 4：限流、黑名单、菜单缓存） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- 安全与校验 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

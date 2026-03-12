@@ -23,32 +23,42 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
 
+    private final RedisService redisService;
+
     public AuthService(UserMapper userMapper,
                        UserRoleMapper userRoleMapper,
                        RoleMapper roleMapper,
                        PasswordEncoder passwordEncoder,
-                       JwtTokenService jwtTokenService) {
+                       JwtTokenService jwtTokenService,
+                       RedisService redisService) {
         this.userMapper = userMapper;
         this.userRoleMapper = userRoleMapper;
         this.roleMapper = roleMapper;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenService = jwtTokenService;
+        this.redisService = redisService;
     }
 
     public LoginResult login(String username, String rawPassword) {
         if (!StringUtils.hasText(username) || !StringUtils.hasText(rawPassword)) {
-            throw new IllegalArgumentException(\"用户名和密码不能为空\");
+            throw new IllegalArgumentException("用户名和密码不能为空");
+        }
+        if (redisService.isLoginLocked(username)) {
+            throw new IllegalArgumentException("登录失败次数过多，请稍后再试");
         }
         User user = userMapper.findByUsername(username);
         if (user == null) {
-            throw new IllegalArgumentException(\"用户名或密码错误\");
+            redisService.recordLoginFailure(username);
+            throw new IllegalArgumentException("用户名或密码错误");
         }
         if (user.getStatus() != null && user.getStatus() == 0) {
-            throw new IllegalArgumentException(\"用户已被禁用\");
+            throw new IllegalArgumentException("用户已被禁用");
         }
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
-            throw new IllegalArgumentException(\"用户名或密码错误\");
+            redisService.recordLoginFailure(username);
+            throw new IllegalArgumentException("用户名或密码错误");
         }
+        redisService.clearLoginFailures(username);
 
         List<UserRole> userRoles = userRoleMapper.findByUserId(user.getId());
         List<Role> roles = new ArrayList<>();

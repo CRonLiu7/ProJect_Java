@@ -1,6 +1,10 @@
-# 本地开发：连本机 Docker 的 PostgreSQL
+# 本地开发：连本机 Docker 的 PostgreSQL 和 Redis
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/project_java
     username: app
     password: app_secret
+  data:
+    redis:
+      host: localhost
+      port: 6379

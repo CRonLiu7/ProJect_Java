@@ -2,6 +2,7 @@ package org.example.config;
 
 import org.example.security.JwtAuthenticationFilter;
 import org.example.security.JwtTokenService;
+import org.example.service.RedisService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,20 +23,21 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenService jwtTokenService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenService jwtTokenService,
+                                                   RedisService redisService) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                \"/api/auth/login\",
-                                \"/api/hello\",
-                                \"/api/db-check\",
-                                \"/actuator/health\"
+                                "/api/auth/login",
+                                "/api/hello",
+                                "/api/db-check",
+                                "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, redisService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

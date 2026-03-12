@@ -14,6 +14,10 @@ spring:
 
 # 本机连 Docker 里的 PG 用 localhost；若应用也跑在 Docker 内则改为 postgres:5432
 # 可通过 spring.profiles.active=dev 使用 application-dev.yml 覆盖
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
@@ -23,7 +27,9 @@ mybatis:
 
 security:
   jwt:
-    # 签名密钥：正式环境请放到环境变量或单独配置文件
     secret: "change-this-secret-to-a-long-random-string"
-    # token 过期时间（分钟）
     expiration-minutes: 60
+  login-lock:
+    max-attempts: 5
+    lock-minutes: 15
+  menu-cache-minutes: 30

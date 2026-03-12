@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.Menu;
 import org.example.entity.Role;
 import org.example.entity.UserRole;
@@ -7,6 +9,7 @@ import org.example.mapper.MenuMapper;
 import org.example.mapper.RoleMapper;
 import org.example.mapper.UserRoleMapper;
 import org.example.security.UserPrincipal;
+import org.example.service.RedisService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,36 +25,46 @@ public class CurrentUserController {
     private final UserRoleMapper userRoleMapper;
     private final RoleMapper roleMapper;
     private final MenuMapper menuMapper;
+    private final RedisService redisService;
+    private final ObjectMapper objectMapper;
 
-    public CurrentUserController(UserRoleMapper userRoleMapper, RoleMapper roleMapper, MenuMapper menuMapper) {
+    public CurrentUserController(UserRoleMapper userRoleMapper, RoleMapper roleMapper, MenuMapper menuMapper,
+                                 RedisService redisService, ObjectMapper objectMapper) {
         this.userRoleMapper = userRoleMapper;
         this.roleMapper = roleMapper;
         this.menuMapper = menuMapper;
+        this.redisService = redisService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/menus")
-    public Map<String, Object> currentUserMenus(Authentication authentication) {
+    public Map<String, Object> currentUserMenus(Authentication authentication) throws Exception {
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
         Long userId = principal.getId();
+
+        String cached = redisService.getMenuCache(userId);
+        if (cached != null) {
+            return objectMapper.readValue(cached, new TypeReference<Map<String, Object>>() {});
+        }
 
         List<UserRole> userRoles = userRoleMapper.findByUserId(userId);
         Set<Long> roleIds = userRoles.stream().map(UserRole::getRoleId).collect(Collectors.toSet());
 
-        // 角色转权限标识（如 ADMIN、USER）
         List<Role> roles = roleIds.stream()
                 .map(roleMapper::findById)
                 .filter(Objects::nonNull)
                 .toList();
         List<String> roleCodes = roles.stream().map(Role::getCode).toList();
 
-        // 简化：当前阶段先直接返回所有菜单树，后续再按角色过滤
         List<Menu> allMenus = menuMapper.findAll();
         List<Map<String, Object>> tree = buildMenuTree(allMenus);
 
-        return Map.of(
+        Map<String, Object> result = Map.of(
                 "roles", roleCodes,
                 "menus", tree
         );
+        redisService.setMenuCache(userId, objectMapper.writeValueAsString(result));
+        return result;
     }
 
     private List<Map<String, Object>> buildMenuTree(List<Menu> menus) {

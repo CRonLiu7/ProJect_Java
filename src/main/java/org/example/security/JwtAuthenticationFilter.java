@@ -21,9 +21,11 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenService jwtTokenService;
+    private final org.example.service.RedisService redisService;
 
-    public JwtAuthenticationFilter(JwtTokenService jwtTokenService) {
+    public JwtAuthenticationFilter(JwtTokenService jwtTokenService, org.example.service.RedisService redisService) {
         this.jwtTokenService = jwtTokenService;
+        this.redisService = redisService;
     }
 
     @Override
@@ -34,6 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             try {
                 Claims claims = jwtTokenService.parseToken(token);
+                String jti = claims.getId();
+                if (jti != null && redisService.isBlacklisted(jti)) {
+                    SecurityContextHolder.clearContext();
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 Long userId = Long.valueOf(claims.getSubject());
                 String username = claims.get("username", String.class);
                 Object rolesObj = claims.get("roles");
@@ -54,7 +62,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception ex) {
-                // 解析失败则保持未认证状态，由后续过滤器返回 401
                 SecurityContextHolder.clearContext();
             }
         }

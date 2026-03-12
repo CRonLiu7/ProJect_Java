@@ -1,4 +1,4 @@
-# 阶段 1：仅 PostgreSQL，后端本地运行连此库
+# 阶段 1：PostgreSQL；阶段 4：Redis
 # 启动：docker compose up -d
 # 停止：docker compose down
 services:
@@ -19,5 +19,19 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: project_java_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   pgdata:
+  redisdata:
